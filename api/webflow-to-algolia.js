@@ -87,33 +87,30 @@ async function fetchItem(collectionId, itemId) {
 ========================= */
 
 export default async function handler(req, res) {
+
+  // 🔎 Simple GET test (for browser sanity)
+  if (req.method === "GET") {
+    return res.status(200).json({ ok: true });
+  }
+
+  // 🔐 Webflow sends POST
   if (req.method !== "POST") {
     return res.status(405).end();
   }
 
-  const { collectionId, itemId, triggerType } = req.body;
+  const { collectionId, itemId } = req.body;
 
   const config = COLLECTIONS[collectionId];
   if (!config) {
     return res.status(200).json({ ignored: true });
   }
 
-  /* ---- DELETE CASES ---- */
-  if (
-    triggerType === "collection_item_unpublished" ||
-    triggerType === "collection_item_archived" ||
-    triggerType === "collection_item_deleted"
-  ) {
-    await index.deleteObject(itemId);
-    return res.status(200).json({ deleted: itemId });
-  }
-
-  /* ---- UPSERT CASE ---- */
   const item = await fetchItem(collectionId, itemId);
 
+  // 🧹 Always trust item state, NOT trigger name
   if (item.isDraft || item.isArchived) {
-    await index.deleteObject(itemId);
-    return res.status(200).json({ skipped: itemId });
+    await index.deleteObject(item.id);
+    return res.status(200).json({ deleted: item.id });
   }
 
   const rawDate = item.fieldData[config.dateField];
@@ -134,15 +131,10 @@ export default async function handler(req, res) {
     exclusive: isExclusive,
     date: rawDate,
     timestamp: toTimestamp(rawDate),
-
-    // ✅ FULL CANONICAL URL
     url: `${BASE_URL}${config.urlPrefix}${item.fieldData.slug}`
   };
 
   await index.saveObject(record);
 
   return res.status(200).json({ indexed: item.id });
-}
-export default function handler(req, res) {
-  res.status(200).json({ ok: true });
 }
