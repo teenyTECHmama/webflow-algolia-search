@@ -88,12 +88,15 @@ async function fetchItem(collectionId, itemId) {
 
 export default async function handler(req, res) {
 
-  // 🔎 Simple GET test (for browser sanity)
+  console.log("🔥 WEBFLOW WEBHOOK HIT");
+  console.log("METHOD:", req.method);
+  console.log("HEADERS:", req.headers);
+  console.log("BODY:", req.body);
+
   if (req.method === "GET") {
     return res.status(200).json({ ok: true });
   }
 
-  // 🔐 Webflow sends POST
   if (req.method !== "POST") {
     return res.status(405).end();
   }
