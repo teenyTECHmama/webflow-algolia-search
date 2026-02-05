@@ -1,6 +1,9 @@
 import algoliasearch from "algoliasearch";
+const ALGOLIA_APP_ID = process.env.ALGOLIA_APP_ID;
+const ALGOLIA_ADMIN_KEY = process.env.ALGOLIA_ADMIN_KEY;
 
-const client = algoliasearch("ODJ036ETTD", "ebdd70c5dc244d330dba367ce45d4c95");
+const client = algoliasearch("ALGOLIA_APP_ID", "ALGOLIA_ADMIN_KEY");
+
 const index = client.initIndex("content2");
 
 const BASE_URL = "https://www.iads.org";
